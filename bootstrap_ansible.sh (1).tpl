@@ -7,8 +7,7 @@
 # --- Configuration (Internal Bash Variables) ---
 readonly LOG_FILE="/root/ansible_setup.log"
 readonly ANSIBLE_DIR="/opt/ansible-setup"
-# Use $$ to escape the '$' for Terraform, so the shell can expand the variable.
-readonly PLAYBOOK_FILE="$$ANSIBLE_DIR/carls_jumpbox_setup.yml"
+readonly PLAYBOOK_FILE="$ANSIBLE_DIR/carls_jumpbox_setup.yml"
 
 # --- Variables Passed from Terraform ---
 # These variables are substituted by Terraform before the script is executed.
@@ -17,8 +16,7 @@ readonly SSH_PUB_KEY_CONTENT="${ssh_public_key}"
 
 # --- Pre-run Checks & Logging Setup ---
 # Redirect all output to the log file and the console.
-# Use $$ to escape the '$' for Terraform.
-exec &> >(tee -a "$$LOG_FILE")
+exec &> >(tee -a "$LOG_FILE")
 
 # Use double quotes to allow shell expansion of the function argument '$1'.
 log_action() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] - INFO: $1"; }
@@ -27,8 +25,7 @@ log_error_exit() { echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] - \e[31mERROR\e[0m: $
 
 # --- Main Script Logic ---
 main() {
-    # Use $$ to escape the '$' for Terraform.
-    log_action "Starting Ansible-based jumpbox setup for user: $$JUMPBOX_USER."
+    log_action "Starting Ansible-based jumpbox setup for user: $JUMPBOX_USER."
     export DEBIAN_FRONTEND=noninteractive
 
     # 1. System Update and Ansible Installation
@@ -41,9 +38,8 @@ main() {
 
     # 2. Setup Ansible Directory and Files
     log_action "Setting up Ansible directory and playbook files..."
-    # Use $$ to escape the '$' for Terraform.
-    mkdir -p "$$ANSIBLE_DIR/roles"
-    cd "$$ANSIBLE_DIR" || log_error_exit "Failed to change to Ansible directory."
+    mkdir -p "$ANSIBLE_DIR/roles"
+    cd "$ANSIBLE_DIR" || log_error_exit "Failed to change to Ansible directory."
 
     # Create Local Inventory
     log_action "Creating local inventory file."
@@ -53,8 +49,8 @@ main() {
     # 3. Create the Main Playbook
     # Use 'EOF' (with single quotes) to prevent shell from expanding variables inside the here-doc.
     # Ansible will handle the {{ ... }} variables.
-    log_action "Creating main playbook: $$PLAYBOOK_FILE."
-    cat << 'EOF' > "$$PLAYBOOK_FILE"
+    log_action "Creating main playbook: $PLAYBOOK_FILE."
+    cat << 'EOF' > "$PLAYBOOK_FILE"
 ---
 - name: Setup Carl's Jumpbox
   hosts: localhost
@@ -207,20 +203,19 @@ EOF
     # the SSH key to handle multi-line content robustly.
     ansible-playbook \
         -i inventory.ini \
-        "$$PLAYBOOK_FILE" \
-        -e "username=$$JUMPBOX_USER" \
-        -e "ssh_key_content='$$SSH_PUB_KEY_CONTENT'"
+        "$PLAYBOOK_FILE" \
+        -e "username=$JUMPBOX_USER" \
+        -e "ssh_key_content='$SSH_PUB_KEY_CONTENT'"
 
     # Check the exit code of the last command ($?) correctly.
-    # Use $$? to get the literal '$?' into the script for the shell to evaluate.
-    if [ $$? -eq 0 ]; then
+    if [ $? -eq 0 ]; then
         log_success "Ansible Playbook executed successfully. Jumpbox setup complete."
     else
-        log_error_exit "Ansible Playbook failed to run. Check $$LOG_FILE for details."
+        log_error_exit "Ansible Playbook failed to run. Check $LOG_FILE for details."
     fi
 
     log_action "--- Script Finished ---"
-    log_action "VM is ready. Log in as user $$JUMPBOX_USER using your SSH key."
+    log_action "VM is ready. Log in as user $JUMPBOX_USER using your SSH key."
 }
 
 # Execute the main function

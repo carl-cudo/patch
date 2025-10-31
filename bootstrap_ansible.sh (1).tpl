@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # --- Ansible-based Jumpbox Setup Script (Corrected for Terraform Templating) ---
 # This script is intended to be used with Terraform's `templatefile` function.
@@ -15,11 +16,6 @@ echo "Reading variables from script arguments..."
 readonly JUMPBOX_USER="$1"
 readonly SSH_PUB_KEY_CONTENT="$2"
 
-# --- Variables Passed from Terraform ---
-# These variables are substituted by Terraform before the script is executed.
-readonly JUMPBOX_USER="${ansible_username}"
-readonly SSH_PUB_KEY_CONTENT="${ssh_public_key}"
-
 # --- Pre-run Checks & Logging Setup ---
 # Redirect all output to the log file and the console.
 exec &> >(tee -a "$LOG_FILE")
@@ -31,6 +27,11 @@ log_error_exit() { echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] - \e[31mERROR\e[0m: $
 
 # --- Main Script Logic ---
 main() {
+    # Check if variables were received
+    if [ -z "$JUMPBOX_USER" ] || [ -z "$SSH_PUB_KEY_CONTENT" ]; then
+        log_error_exit "JUMPBOX_USER or SSH_PUB_KEY_CONTENT was not received. Aborting."
+    fi
+
     log_action "Starting Ansible-based jumpbox setup for user: $JUMPBOX_USER."
     export DEBIAN_FRONTEND=noninteractive
 

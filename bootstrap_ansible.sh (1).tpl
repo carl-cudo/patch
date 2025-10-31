@@ -36,6 +36,14 @@ main() {
     apt-get install -y -q -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" ansible git python3-pip
     log_success "System updated and Ansible installed."
 
+    log_action "Configuring system locale for UTF-8..."
+    apt-get install -y -q locales
+    locale-gen en_US.UTF-8
+    update-locale LANG=en_US.UTF-8
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+    log_success "System locale set to en_US.UTF-8."
+
     # 2. Setup Ansible Directory and Files
     log_action "Setting up Ansible directory and playbook files..."
     mkdir -p "$ANSIBLE_DIR/roles"

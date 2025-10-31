@@ -9,6 +9,12 @@ readonly LOG_FILE="/root/ansible_setup.log"
 readonly ANSIBLE_DIR="/opt/ansible-setup"
 readonly PLAYBOOK_FILE="$ANSIBLE_DIR/carls_jumpbox_setup.yml"
 
+# Variables Passed from Wrapper Script
+# Read from positional arguments $1 and $2
+echo "Reading variables from script arguments..."
+readonly JUMPBOX_USER="$1"
+readonly SSH_PUB_KEY_CONTENT="$2"
+
 # --- Variables Passed from Terraform ---
 # These variables are substituted by Terraform before the script is executed.
 readonly JUMPBOX_USER="${ansible_username}"

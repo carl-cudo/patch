@@ -175,11 +175,10 @@ EOF
     mode: '0755'
 
 - name: Add Docker's official GPG key
-  ansible.builtin.get_url:
+  ansible.builtin.apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
-    dest: /etc/apt/keyrings/docker.gpg
-    mode: '0644'
-    force: yes
+    keyring: /etc/apt/keyrings/docker.gpg
+    state: present
 
 - name: Set up the stable Docker repository
   ansible.builtin.apt_repository:
